@@ -4,9 +4,13 @@ using UnityEngine;
 
 public class Marble : MonoBehaviour
 {
-    private const float YLowerBound = -1.5f;
+    private const float VelocityMaxMagnitude = 80f;
 
-    private const float centerRotationOffset = 37.5f;
+    private const float PowerUpDuration = 5f;
+
+    public int GemCount { get; private set; }
+
+    private int gemIncrementAmount = 1;
 
     private Rigidbody rb;
 
@@ -29,30 +33,48 @@ public class Marble : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if (transform.position.y < YLowerBound)
-        {
-            GameManager.Instance.RemoveMarble(gameObject);
-        }
     }
 
     private void FixedUpdate()
     {
-        if (winner)
+        if (!GameManager.Instance.IsSimActive)
         {
-            var deltaRotation = Quaternion.Euler(rotateVelocity * Time.fixedDeltaTime);
-            rb.MoveRotation(rb.rotation * deltaRotation);
+            return;
         }
+
+        var velocity = rb.velocity;
+        var velocityMagnitude = velocity.magnitude;
+
+        if (velocityMagnitude == 0)
+        {
+            return;
+        }
+
+        if (velocityMagnitude < VelocityMaxMagnitude)
+        {
+            var forceMultiplier = VelocityMaxMagnitude / velocityMagnitude;
+            rb.AddForce(velocity.normalized * forceMultiplier);
+        }
+
+        //if (winner)
+        //{
+        //    var deltaRotation = Quaternion.Euler(rotateVelocity * Time.fixedDeltaTime);
+        //    rb.MoveRotation(rb.rotation * deltaRotation);
+        //}
     }
 
     private void OnCollisionEnter(Collision collision)
     {
-        if (collision.gameObject.CompareTag("Barrier"))
-        {
-            AddForceTowardsCenter();
-            return;
-        }
+        //if (collision.gameObject.CompareTag("Barrier"))
+        //{
+        //    AddForceTowardsCenter();
+        //    return;
+        //}
 
-        AddRandomForce();
+        //TODO: Probably do a switch expression on the tag and call the correpsonding function
+
+        //gem, call UpdateScore which will also call a correpsonding method in gameManager
+        //
     }
 
     private void AddRandomForce()
@@ -60,24 +82,17 @@ public class Marble : MonoBehaviour
         //Get random direction
         var direction = new Vector3(Random.Range(-1f, 1f), 0f, Random.Range(-1f, 1f));
 
-        //Get random speed
-        var speed = Random.Range(250f, 600f);
-
         //Add force to move cell
-        rb.AddForce(direction.normalized * speed);
+        rb.AddForce(direction.normalized * 450f);
     }
 
-    private void AddForceTowardsCenter()
-    {
-        //Get random direction
-        var direction = Vector3.zero - new Vector3(transform.position.x, 0, transform.position.z);
 
-        //Get random speed
-        var speed = Random.Range(250f, 600f);
 
-        //Add force to move cell
-        rb.AddForce(direction.normalized * speed);
-    }
+
+
+
+
+
 
     public void DisplayWinner()
     {

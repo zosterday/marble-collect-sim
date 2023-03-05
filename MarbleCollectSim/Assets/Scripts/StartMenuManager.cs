@@ -10,7 +10,7 @@ public class StartMenuManager : MonoBehaviour
 {
     private const string SimulationScene = "SimScene";
 
-    private const int DefaultMarbleSpawnCount = 50;
+    private const int DefaultMarbleSpawnCount = 15;
 
     [SerializeField]
     private Button startButton;

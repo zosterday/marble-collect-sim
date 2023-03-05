@@ -3,21 +3,30 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
+//TODO: Add object pooling for gems and powerups to optimize when all done
+
+//Need to figure out how to connect the leaderboard entries to actual marble
+//want a copy of the gameobject so might just have a dictionary mapping the marble to the marble that is the entry in the leaderboard
+
 public class GameManager : MonoBehaviour
 {
-    private const float xSpawnBound = 7f;
+    private const string GroundTag = "Ground";
 
-    private const float zSpawnBound = 8.7f;
+    private const float XSpawnBound = 13f;
+
+    private const float ZSpawnBound = 13f;
 
     private const float MarbleRadius = 0.5f;
 
-    private const string BarrierTag = "Barrier";
+    private const int PowerUpSpawnCount = 2;
 
-    private const float BarrierRemovalInterval = 1f;
+    private const int GemMinSpawnCount = 3;
+
+    private const int GemMaxSpawnCount = 5;
 
     [SerializeField]
     private List<Color> colors;
-
+    
     [SerializeField]
     private List<Texture> textures;
 
@@ -41,12 +50,16 @@ public class GameManager : MonoBehaviour
 
     private static GameManager instance;
 
-    private bool isSimActive;
+    public bool IsSimActive { get; private set; }
 
     [SerializeField]
     private GameObject marblePrefab;
 
-    private List<GameObject> barriers;
+    [SerializeField]
+    private GameObject gemPrefab;
+
+    [SerializeField]
+    private List<GameObject> powerUpPrefabs;
 
     private readonly List<GameObject> marbles = new();
 
@@ -54,10 +67,8 @@ public class GameManager : MonoBehaviour
 
     private void Awake()
     {
-        isSimActive = false;
+        IsSimActive = false;
         instance = this;
-
-        barriers = GameObject.FindGameObjectsWithTag(BarrierTag).ToList();
 
         CreateColorTexturePairs();
         SpawnMarbles();
@@ -66,21 +77,23 @@ public class GameManager : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        isSimActive = true;
-        InvokeRepeating(nameof(RemoveBarrier), 1f, BarrierRemovalInterval);
+        IsSimActive = true;
+        InvokeRepeating(nameof(SpawnGems), 0f, 5f);
+        InvokeRepeating(nameof(SpawnPowerUps), 1f, 5f);
     }
 
     // Update is called once per frame
     void Update()
     {
-        if (!isSimActive)
+        if (!IsSimActive)
         {
             return;
         }
 
+        //TODO: Make this time based instead, there is no win condition 
         if (activeMarbleCount == 1 && marbles.Count == 1)
         {
-            isSimActive = false;
+            IsSimActive = false;
             EndGame();
         }
     }
@@ -117,18 +130,9 @@ public class GameManager : MonoBehaviour
         }
     }
 
-
-
     private bool TrySpawnMarble()
     {
-        // Generate Random Spawn Position
-        var x = Random.Range(-xSpawnBound, xSpawnBound);
-        var z = Random.Range(-zSpawnBound, zSpawnBound);
-        var spawnPos = new Vector3(x, 0, z);
-
-        // Check for collision
-        var collision = Physics.OverlapSphere(spawnPos, MarbleRadius);
-        if (collision.Length != 0)
+        if (!TrySpawn(out var spawnPos))
         {
             return false;
         }
@@ -151,17 +155,84 @@ public class GameManager : MonoBehaviour
         return true;
     }
 
-    private void RemoveBarrier()
+    private void SpawnGems()
     {
-        if (barriers.Count <= 0)
+        var gemSpawnCount = Random.Range(GemMinSpawnCount, GemMinSpawnCount);
+
+        for (var i = 0; i < gemSpawnCount; i++)
         {
-            return;
+            var gemSpawned = false;
+
+            var tryCount = 0;
+
+            while (!gemSpawned && tryCount <= 20)
+            {
+                gemSpawned = TrySpawnGem();
+                tryCount++;
+            }
+        }
+    }
+
+    private bool TrySpawnGem()
+    {
+        if (!TrySpawn(out var spawnPos))
+        {
+            return false;
         }
 
-        var index = Random.Range(0, barriers.Count);
+        Instantiate(gemPrefab, spawnPos, Quaternion.identity);
+        
+        return true;
+    }
 
-        barriers[index].SetActive(false);
-        barriers.RemoveAt(index);
+    private void SpawnPowerUps()
+    {
+        for (var i = 0; i < PowerUpSpawnCount; i++)
+        {
+            var powerUpSpawned = false;
+
+            var tryCount = 0;
+
+            while (!powerUpSpawned && tryCount <= 20)
+            {
+                powerUpSpawned = TrySpawnPowerUp();
+                tryCount++;
+            }
+        }
+    }
+
+    private bool TrySpawnPowerUp()
+    {
+        if (!TrySpawn(out var spawnPos))
+        {
+            return false;
+        }
+
+        var randomIndex = Random.Range(0, powerUpPrefabs.Count);
+        var pickupPrefab = powerUpPrefabs[randomIndex];
+        Instantiate(pickupPrefab, spawnPos, Quaternion.identity);
+
+        return true;
+    }
+
+    private bool TrySpawn(out Vector3 spawnPos)
+    {
+        // Generate Random Spawn Position
+        var x = Random.Range(-XSpawnBound, XSpawnBound);
+        var z = Random.Range(-ZSpawnBound, ZSpawnBound);
+        spawnPos = new Vector3(x, 0.5f, z);
+
+        // Check for collision
+        var collisions = Physics.OverlapSphere(spawnPos, MarbleRadius);
+        foreach (var collision in collisions)
+        {
+            if (!collision.CompareTag(GroundTag))
+            {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     public void RemoveMarble(GameObject gameObject)
@@ -174,6 +245,9 @@ public class GameManager : MonoBehaviour
     private void EndGame()
     {
         endGamePanel.SetActive(true);
+        CancelInvoke();
+
+        //TODO: Figure out display winner thing based on leaderboard entry
         marbles[0].GetComponent<Marble>().DisplayWinner();
     }
 
