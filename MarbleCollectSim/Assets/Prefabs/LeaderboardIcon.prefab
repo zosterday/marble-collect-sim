@@ -13,7 +13,7 @@ GameObject:
   - component: {fileID: 4471549965076338928}
   - component: {fileID: 4471549965076338933}
   - component: {fileID: 8979373437984410686}
-  m_Layer: 0
+  m_Layer: 5
   m_Name: LeaderboardIcon
   m_TagString: Marble
   m_Icon: {fileID: 0}

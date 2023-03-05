@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Reflection;
 using UnityEngine;
 
 public class Marble : MonoBehaviour
@@ -16,6 +17,8 @@ public class Marble : MonoBehaviour
 
     private const float SpeedBoostAmount = 45f;
 
+    private readonly Vector3 rotateVelocity = new Vector3(0f, 65f, 0f);
+
     private float velocityMaxMagnitude = 80f;
 
     public int GemCount { get; private set; }
@@ -24,8 +27,11 @@ public class Marble : MonoBehaviour
 
     private Rigidbody rb;
 
+    private bool winner;
+
     private void Awake()
     {
+        winner = false;
         rb = GetComponent<Rigidbody>();
     }
 
@@ -38,6 +44,11 @@ public class Marble : MonoBehaviour
     {
         if (!GameManager.Instance.IsSimActive)
         {
+            if (winner)
+            {
+                var deltaRotation = Quaternion.Euler(rotateVelocity * Time.fixedDeltaTime);
+                rb.MoveRotation(rb.rotation.normalized * deltaRotation);
+            }
             rb.velocity = Vector3.zero;
             return;
         }
@@ -92,8 +103,6 @@ public class Marble : MonoBehaviour
     {
         GemCount += gemIncrementAmount;
         GameManager.Instance.UpdateGemCount(gameObject, GemCount);
-
-        //TODO: Call gamemaneger method to update the gemcount over there
     }
 
     private IEnumerator BoostCollectionAmount()
@@ -121,5 +130,19 @@ public class Marble : MonoBehaviour
         yield return new WaitForSeconds(PowerUpDuration);
 
         velocityMaxMagnitude -= SpeedBoostAmount;
+    }
+
+    public void DisplayWinner()
+    {
+        var mainCam = Camera.main.transform;
+
+        rb.velocity = Vector3.zero;
+        rb.rotation = mainCam.rotation;
+        rb.useGravity = false;
+
+        winner = true;
+
+        transform.localScale = new Vector3(0.5f, 0.5f, 0.5f);
+        transform.position = mainCam.position + mainCam.forward * 3;
     }
 }

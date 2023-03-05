@@ -4,25 +4,11 @@ using System.Linq;
 using TMPro;
 using UnityEngine;
 
-//TODO: Add object pooling for gems and powerups to optimize when all done
-
-//TODOs:
-//when I instantiate the leaderboardIcons, they need to be setactive(false)
-//Add Leaderboard
-//Do end game logic
-//Do the end game winner panel
-//Add object pooling for pickups
-//Clean up code, make general helper functions when possible. Eliminate duplicate code
-//Need to figure out how to connect the leaderboard entries to actual marble
-//want a copy of the gameobject so might just have a dictionary mapping the marble to the marble that is the entry in the leaderboard
-
 public class GameManager : MonoBehaviour
 {
     private const string GroundTag = "Ground";
 
-    private const float XSpawnBound = 13f;
-
-    private const float ZSpawnBound = 13f;
+    private const float SpawnBound = 13f;
 
     private const float MarbleRadius = 0.5f;
 
@@ -79,7 +65,7 @@ public class GameManager : MonoBehaviour
     private List<TextMeshProUGUI> leaderboardTexts;
 
     [SerializeField]
-    private Canvas canvas;
+    private GameObject leaderboardPanel;
 
     private readonly List<GameObject> marbles = new();
 
@@ -119,10 +105,11 @@ public class GameManager : MonoBehaviour
         {
             IsSimActive = false;
             EndGame();
+            return;
         }
 
         countdownTimer -= Time.deltaTime;
-        countdownTimerText.text = countdownTimer.ToString();
+        countdownTimerText.text = countdownTimer.ToString("0.00");
     }
 
     private void CreateColorTexturePairs()
@@ -181,7 +168,7 @@ public class GameManager : MonoBehaviour
         var leaderboardIcon = Instantiate(leaderboardIconPrefab, Vector3.zero, Quaternion.identity);
 
         // Set parent to be leaderboardPanel
-        leaderboardIcon.transform.SetParent(canvas.transform);
+        leaderboardIcon.transform.SetParent(leaderboardPanel.transform);
 
         var iconRenderer = leaderboardIcon.GetComponent<Renderer>();
         iconRenderer.material.color = colorTexturePair.Color;
@@ -256,8 +243,8 @@ public class GameManager : MonoBehaviour
     private bool TrySpawn(out Vector3 spawnPos)
     {
         // Generate Random Spawn Position
-        var x = Random.Range(-XSpawnBound, XSpawnBound);
-        var z = Random.Range(-ZSpawnBound, ZSpawnBound);
+        var x = Random.Range(-SpawnBound, SpawnBound);
+        var z = Random.Range(-SpawnBound, SpawnBound);
         spawnPos = new Vector3(x, 0.5f, z);
 
         // Check for collision
@@ -307,11 +294,11 @@ public class GameManager : MonoBehaviour
             iconObj.SetActive(false);
         }
 
-        first.SetLeaderboardPosition(1);
-        second.SetLeaderboardPosition(2);
-        third.SetLeaderboardPosition(3);
-        fourth.SetLeaderboardPosition(4);
-        fifth.SetLeaderboardPosition(5);
+        first.SetLeaderboardPosition(0);
+        second.SetLeaderboardPosition(1);
+        third.SetLeaderboardPosition(2);
+        fourth.SetLeaderboardPosition(3);
+        fifth.SetLeaderboardPosition(4);
     }
 
     private void EndGame()
@@ -319,7 +306,10 @@ public class GameManager : MonoBehaviour
         endGamePanel.SetActive(true);
         CancelInvoke();
 
-        leaderboardIcons[0].GetComponent<LeaderboardIcon>().DisplayWinner();
+        var maxGemCount = marbles.Max((m => m.GetComponent<Marble>().GemCount));
+        var marble = marbles.Where((m => m.GetComponent<Marble>().GemCount == maxGemCount)).ToList();
+
+        marble[0].GetComponent<Marble>().DisplayWinner();
     }
 
     private struct ColorTexturePair
