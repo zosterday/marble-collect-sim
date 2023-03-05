@@ -596,8 +596,8 @@ Canvas:
   m_GameObject: {fileID: 118402710}
   m_Enabled: 1
   serializedVersion: 3
-  m_RenderMode: 0
-  m_Camera: {fileID: 0}
+  m_RenderMode: 1
+  m_Camera: {fileID: 1462865016}
   m_PlaneDistance: 10
   m_PixelPerfect: 0
   m_ReceivesEvents: 1
@@ -940,7 +940,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 9126701928449053401, guid: 499a5ea3f8f564907b685e67b564d45a, type: 3}
       propertyPath: m_IsActive
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 499a5ea3f8f564907b685e67b564d45a, type: 3}
@@ -1524,7 +1524,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 544462537607415698, guid: 649698e4b919645e8929ef6ea87498b6, type: 3}
       propertyPath: m_IsActive
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 544462537607850326, guid: 649698e4b919645e8929ef6ea87498b6, type: 3}
       propertyPath: m_RootOrder
@@ -1949,7 +1949,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3042714250729649104, guid: 5b5f49e238acd4a63bfd55d9de599dc2, type: 3}
       propertyPath: m_IsActive
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 5b5f49e238acd4a63bfd55d9de599dc2, type: 3}
@@ -2110,7 +2110,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1802560690484343541, guid: 7ed8b75ec6d884f18bc636818140e456, type: 3}
       propertyPath: m_IsActive
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 1807950640211195163, guid: 7ed8b75ec6d884f18bc636818140e456, type: 3}
       propertyPath: m_RootOrder

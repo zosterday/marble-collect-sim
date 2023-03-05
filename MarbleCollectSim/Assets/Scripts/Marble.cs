@@ -44,12 +44,6 @@ public class Marble : MonoBehaviour
     {
         if (!GameManager.Instance.IsSimActive)
         {
-            if (winner)
-            {
-                var deltaRotation = Quaternion.Euler(rotateVelocity * Time.fixedDeltaTime);
-                rb.MoveRotation(rb.rotation.normalized * deltaRotation);
-            }
-            rb.velocity = Vector3.zero;
             return;
         }
 
@@ -130,6 +124,19 @@ public class Marble : MonoBehaviour
         yield return new WaitForSeconds(PowerUpDuration);
 
         velocityMaxMagnitude -= SpeedBoostAmount;
+    }
+
+    public void EndSimulation()
+    {
+        if (winner)
+        {
+            var deltaRotation = Quaternion.Euler(rotateVelocity * Time.fixedDeltaTime);
+            rb.MoveRotation(rb.rotation.normalized * deltaRotation);
+            return;
+        }
+
+        rb.velocity = Vector3.zero;
+        rb.rotation = Quaternion.identity;
     }
 
     public void DisplayWinner()

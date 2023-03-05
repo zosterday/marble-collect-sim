@@ -277,28 +277,23 @@ public class GameManager : MonoBehaviour
     {
         leaderboardIcons.Sort((g1, g2) => g2.GetComponent<LeaderboardIcon>().GemCount - g1.GetComponent<LeaderboardIcon>().GemCount);
 
-        var first = leaderboardIcons[0].GetComponent<LeaderboardIcon>();
-        var second = leaderboardIcons[1].GetComponent<LeaderboardIcon>();
-        var third = leaderboardIcons[2].GetComponent<LeaderboardIcon>();
-        var fourth = leaderboardIcons[3].GetComponent<LeaderboardIcon>();
-        var fifth = leaderboardIcons[4].GetComponent<LeaderboardIcon>();
-
-        leaderboardTexts[0].text = $"1st: {first.GemCount}";
-        leaderboardTexts[1].text = $"2nd: {second.GemCount}";
-        leaderboardTexts[2].text = $"3rd: {third.GemCount}";
-        leaderboardTexts[3].text = $"4th: {fourth.GemCount}";
-        leaderboardTexts[4].text = $"5th: {fifth.GemCount}";
+        leaderboardTexts[0].text = $"1st: ";
+        leaderboardTexts[1].text = $"2nd: ";
+        leaderboardTexts[2].text = $"3rd: ";
+        leaderboardTexts[3].text = $"4th: ";
+        leaderboardTexts[4].text = $"5th: ";
 
         foreach (var iconObj in leaderboardIcons)
         {
             iconObj.SetActive(false);
         }
 
-        first.SetLeaderboardPosition(0);
-        second.SetLeaderboardPosition(1);
-        third.SetLeaderboardPosition(2);
-        fourth.SetLeaderboardPosition(3);
-        fifth.SetLeaderboardPosition(4);
+        for (var i = 0; i < 5; i++)
+        {
+            var icon = leaderboardIcons[i].GetComponent<LeaderboardIcon>();
+            leaderboardTexts[i].text += icon.GemCount;
+            icon.SetLeaderboardPosition(i);
+        }
     }
 
     private void EndGame()
@@ -307,9 +302,15 @@ public class GameManager : MonoBehaviour
         CancelInvoke();
 
         var maxGemCount = marbles.Max((m => m.GetComponent<Marble>().GemCount));
-        var marble = marbles.Where((m => m.GetComponent<Marble>().GemCount == maxGemCount)).ToList();
+        var winner = marbles.Where((m => m.GetComponent<Marble>().GemCount == maxGemCount)).ToList();
 
-        marble[0].GetComponent<Marble>().DisplayWinner();
+        winner[0].GetComponent<Marble>().DisplayWinner();
+
+        foreach (var marbleObj in marbles)
+        {
+            var marble = marbleObj.GetComponent<Marble>();
+            marble.EndSimulation();
+        }
     }
 
     private struct ColorTexturePair
