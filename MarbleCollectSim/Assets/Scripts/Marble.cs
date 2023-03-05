@@ -4,11 +4,21 @@ using UnityEngine;
 
 public class Marble : MonoBehaviour
 {
-    private const float VelocityMaxMagnitude = 80f;
+    private const string GemTag = "Gem";
 
-    private const float PowerUpDuration = 5f;
+    private const string CollectionBoostTag = "CollectionBoost";
 
-    public int GemCount { get; private set; }
+    private const string SpeedBoostTag = "SpeedBoost";
+
+    private const string SizeMultiplierTag = "SizeMultiplier";
+
+    private const float PowerUpDuration = 8f;
+
+    private const float SpeedBoostAmount = 45f;
+
+    private float velocityMaxMagnitude = 80f;
+
+    private int gemCount;
 
     private int gemIncrementAmount = 1;
 
@@ -24,7 +34,6 @@ public class Marble : MonoBehaviour
         rb = GetComponent<Rigidbody>();
     }
 
-    // Start is called before the first frame update
     void Start()
     {
         AddRandomForce();
@@ -50,9 +59,9 @@ public class Marble : MonoBehaviour
             return;
         }
 
-        if (velocityMagnitude < VelocityMaxMagnitude)
+        if (velocityMagnitude < velocityMaxMagnitude)
         {
-            var forceMultiplier = VelocityMaxMagnitude / velocityMagnitude;
+            var forceMultiplier = velocityMaxMagnitude / velocityMagnitude;
             rb.AddForce(velocity.normalized * forceMultiplier);
         }
 
@@ -63,28 +72,89 @@ public class Marble : MonoBehaviour
         //}
     }
 
-    private void OnCollisionEnter(Collision collision)
-    {
-        //if (collision.gameObject.CompareTag("Barrier"))
-        //{
-        //    AddForceTowardsCenter();
-        //    return;
-        //}
-
-        //TODO: Probably do a switch expression on the tag and call the correpsonding function
-
-        //gem, call UpdateScore which will also call a correpsonding method in gameManager
-        //
-    }
-
     private void AddRandomForce()
     {
-        //Get random direction
         var direction = new Vector3(Random.Range(-1f, 1f), 0f, Random.Range(-1f, 1f));
 
-        //Add force to move cell
         rb.AddForce(direction.normalized * 450f);
     }
+
+    private void OnTriggerEnter(Collider other)
+    {
+        switch (other.tag)
+        {
+            case GemTag:
+                ConsumeGem();
+                break;
+
+            case CollectionBoostTag:
+                StartCoroutine(BoostCollectionAmount());
+                break;
+
+            case SizeMultiplierTag:
+                StartCoroutine(MultiplySize());
+                break;
+
+            case SpeedBoostTag:
+                StartCoroutine(BoostSpeed());
+                break;
+        }
+
+        Destroy(other.gameObject);
+    }
+
+    private void ConsumeGem()
+    {
+        gemCount += gemIncrementAmount;
+
+        //TODO: Call gamemaneger method to update the gemcount over there
+    }
+
+    //private void ConsumeCollectionBoost(GameObject collectionBoostObj)
+    //{
+    //    StartCoroutine(BoostCollectionAmount());
+    //    Destroy(collectionBoostObj);
+    //}
+
+    //private void ConsumeSizeMultiplier(GameObject sizeMultiplierObj)
+    //{
+    //    StartCoroutine(MultiplySize());
+    //    Destroy(sizeMultiplierObj);
+    //}
+
+    //private void ConsumeSpeedBoost(GameObject speedBoostObj)
+    //{
+    //    StartCoroutine(BoostSpeed());
+    //    Destroy(speedBoostObj);
+    //}
+
+    private IEnumerator BoostCollectionAmount()
+    {
+        gemIncrementAmount += 1;
+
+        yield return new WaitForSeconds(PowerUpDuration);
+
+        gemIncrementAmount -= 1;
+    }
+
+    private IEnumerator MultiplySize()
+    {
+        transform.localScale *= 2f;
+
+        yield return new WaitForSeconds(PowerUpDuration);
+
+        transform.localScale *= 0.5f;
+    }
+
+    private IEnumerator BoostSpeed()
+    {
+        velocityMaxMagnitude += SpeedBoostAmount;
+
+        yield return new WaitForSeconds(PowerUpDuration);
+
+        velocityMaxMagnitude -= SpeedBoostAmount;
+    }
+
 
 
 

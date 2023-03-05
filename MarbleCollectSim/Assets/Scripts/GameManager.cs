@@ -5,6 +5,16 @@ using UnityEngine;
 
 //TODO: Add object pooling for gems and powerups to optimize when all done
 
+//TODOs:
+//Add coroutines/logic for when marbles hit pickups
+//Add Leaderboard
+//Add countdown timer on top of screen for the whole sim
+//Do the end game winner panel
+//Add object pooling for pickups
+//Clean up code, make general helper functions when possible. Eliminate duplicate code
+
+
+
 //Need to figure out how to connect the leaderboard entries to actual marble
 //want a copy of the gameobject so might just have a dictionary mapping the marble to the marble that is the entry in the leaderboard
 
@@ -18,11 +28,11 @@ public class GameManager : MonoBehaviour
 
     private const float MarbleRadius = 0.5f;
 
-    private const int PowerUpSpawnCount = 2;
+    private const int PowerUpSpawnCount = 3;
 
-    private const int GemMinSpawnCount = 3;
+    private const int GemMinSpawnCount = 4;
 
-    private const int GemMaxSpawnCount = 5;
+    private const int GemMaxSpawnCount = 8;
 
     [SerializeField]
     private List<Color> colors;

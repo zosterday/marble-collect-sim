@@ -8,6 +8,10 @@ TagManager:
   - Marble
   - Wall
   - Ground
+  - Gem
+  - CollectionBoost
+  - SpeedBoost
+  - SizeMultiplier
   layers:
   - Default
   - TransparentFX
