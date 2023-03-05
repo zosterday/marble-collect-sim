@@ -18,19 +18,14 @@ public class Marble : MonoBehaviour
 
     private float velocityMaxMagnitude = 80f;
 
-    private int gemCount;
+    public int GemCount { get; private set; }
 
     private int gemIncrementAmount = 1;
 
     private Rigidbody rb;
 
-    private bool winner;
-
-    private readonly Vector3 rotateVelocity = new Vector3(85f, 0f, 0f);
-
     private void Awake()
     {
-        winner = false;
         rb = GetComponent<Rigidbody>();
     }
 
@@ -39,15 +34,11 @@ public class Marble : MonoBehaviour
         AddRandomForce();
     }
 
-    // Update is called once per frame
-    void Update()
-    {
-    }
-
     private void FixedUpdate()
     {
         if (!GameManager.Instance.IsSimActive)
         {
+            rb.velocity = Vector3.zero;
             return;
         }
 
@@ -64,12 +55,6 @@ public class Marble : MonoBehaviour
             var forceMultiplier = velocityMaxMagnitude / velocityMagnitude;
             rb.AddForce(velocity.normalized * forceMultiplier);
         }
-
-        //if (winner)
-        //{
-        //    var deltaRotation = Quaternion.Euler(rotateVelocity * Time.fixedDeltaTime);
-        //    rb.MoveRotation(rb.rotation * deltaRotation);
-        //}
     }
 
     private void AddRandomForce()
@@ -105,28 +90,11 @@ public class Marble : MonoBehaviour
 
     private void ConsumeGem()
     {
-        gemCount += gemIncrementAmount;
+        GemCount += gemIncrementAmount;
+        GameManager.Instance.UpdateGemCount(gameObject, GemCount);
 
         //TODO: Call gamemaneger method to update the gemcount over there
     }
-
-    //private void ConsumeCollectionBoost(GameObject collectionBoostObj)
-    //{
-    //    StartCoroutine(BoostCollectionAmount());
-    //    Destroy(collectionBoostObj);
-    //}
-
-    //private void ConsumeSizeMultiplier(GameObject sizeMultiplierObj)
-    //{
-    //    StartCoroutine(MultiplySize());
-    //    Destroy(sizeMultiplierObj);
-    //}
-
-    //private void ConsumeSpeedBoost(GameObject speedBoostObj)
-    //{
-    //    StartCoroutine(BoostSpeed());
-    //    Destroy(speedBoostObj);
-    //}
 
     private IEnumerator BoostCollectionAmount()
     {
@@ -153,26 +121,5 @@ public class Marble : MonoBehaviour
         yield return new WaitForSeconds(PowerUpDuration);
 
         velocityMaxMagnitude -= SpeedBoostAmount;
-    }
-
-
-
-
-
-
-
-
-
-
-    public void DisplayWinner()
-    {
-        rb.velocity = Vector3.zero;
-        rb.rotation = Quaternion.identity;
-        rb.useGravity = false;
-        winner = true;
-
-        var mainCam = Camera.main.transform;
-        transform.localScale = new Vector3(3f, 3f, 3f);
-        transform.position = mainCam.position + mainCam.forward * 3;
     }
 }

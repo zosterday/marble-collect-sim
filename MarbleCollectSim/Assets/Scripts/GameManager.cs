@@ -1,20 +1,18 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using TMPro;
 using UnityEngine;
 
 //TODO: Add object pooling for gems and powerups to optimize when all done
 
 //TODOs:
-//Add coroutines/logic for when marbles hit pickups
+//when I instantiate the leaderboardIcons, they need to be setactive(false)
 //Add Leaderboard
-//Add countdown timer on top of screen for the whole sim
+//Do end game logic
 //Do the end game winner panel
 //Add object pooling for pickups
 //Clean up code, make general helper functions when possible. Eliminate duplicate code
-
-
-
 //Need to figure out how to connect the leaderboard entries to actual marble
 //want a copy of the gameobject so might just have a dictionary mapping the marble to the marble that is the entry in the leaderboard
 
@@ -34,17 +32,6 @@ public class GameManager : MonoBehaviour
 
     private const int GemMaxSpawnCount = 8;
 
-    [SerializeField]
-    private List<Color> colors;
-    
-    [SerializeField]
-    private List<Texture> textures;
-
-    [SerializeField]
-    private GameObject endGamePanel;
-
-    private int activeMarbleCount;
-
     public static GameManager Instance
     {
         get
@@ -58,12 +45,17 @@ public class GameManager : MonoBehaviour
         }
     }
 
+    public bool IsSimActive { get; private set; }
+
     private static GameManager instance;
 
-    public bool IsSimActive { get; private set; }
+    private float countdownTimer = 60f;
 
     [SerializeField]
     private GameObject marblePrefab;
+
+    [SerializeField]
+    private GameObject leaderboardIconPrefab;
 
     [SerializeField]
     private GameObject gemPrefab;
@@ -71,9 +63,31 @@ public class GameManager : MonoBehaviour
     [SerializeField]
     private List<GameObject> powerUpPrefabs;
 
+    [SerializeField]
+    private List<Color> colors;
+
+    [SerializeField]
+    private List<Texture> textures;
+
+    [SerializeField]
+    private GameObject endGamePanel;
+
+    [SerializeField]
+    private TextMeshProUGUI countdownTimerText;
+
+    [SerializeField]
+    private List<TextMeshProUGUI> leaderboardTexts;
+
+    [SerializeField]
+    private Canvas canvas;
+
     private readonly List<GameObject> marbles = new();
 
+    private readonly List<GameObject> leaderboardIcons = new();
+
     private readonly List<ColorTexturePair> colorTexturePairs = new();
+
+    private readonly Dictionary<GameObject, GameObject> leaderboardIconsByMarbles = new();
 
     private void Awake()
     {
@@ -82,17 +96,18 @@ public class GameManager : MonoBehaviour
 
         CreateColorTexturePairs();
         SpawnMarbles();
+
+        IsSimActive = true;
     }
 
-    // Start is called before the first frame update
     void Start()
     {
-        IsSimActive = true;
-        InvokeRepeating(nameof(SpawnGems), 0f, 5f);
-        InvokeRepeating(nameof(SpawnPowerUps), 1f, 5f);
+        InvokeRepeating(nameof(SpawnGems), 0f, 3f);
+        InvokeRepeating(nameof(SpawnPowerUps), 1f, 4f);
+
+        UpdateLeaderboard();
     }
 
-    // Update is called once per frame
     void Update()
     {
         if (!IsSimActive)
@@ -100,12 +115,14 @@ public class GameManager : MonoBehaviour
             return;
         }
 
-        //TODO: Make this time based instead, there is no win condition 
-        if (activeMarbleCount == 1 && marbles.Count == 1)
+        if (countdownTimer <= 0f)
         {
             IsSimActive = false;
             EndGame();
         }
+
+        countdownTimer -= Time.deltaTime;
+        countdownTimerText.text = countdownTimer.ToString();
     }
 
     private void CreateColorTexturePairs()
@@ -157,10 +174,21 @@ public class GameManager : MonoBehaviour
         renderer.material.color = colorTexturePair.Color;
         renderer.material.mainTexture = colorTexturePair.Texture;
 
-
         // Add marble to marbles list
         marbles.Add(marble);
-        activeMarbleCount++;
+
+        // Instantiate and set up corresponding leaderboard icon
+        var leaderboardIcon = Instantiate(leaderboardIconPrefab, Vector3.zero, Quaternion.identity);
+
+        // Set parent to be leaderboardPanel
+        leaderboardIcon.transform.SetParent(canvas.transform);
+
+        var iconRenderer = leaderboardIcon.GetComponent<Renderer>();
+        iconRenderer.material.color = colorTexturePair.Color;
+        iconRenderer.material.mainTexture = colorTexturePair.Texture;
+
+        leaderboardIcons.Add(leaderboardIcon);
+        leaderboardIconsByMarbles.Add(marble, leaderboardIcon);
 
         return true;
     }
@@ -245,11 +273,45 @@ public class GameManager : MonoBehaviour
         return true;
     }
 
-    public void RemoveMarble(GameObject gameObject)
+    public void UpdateGemCount(GameObject gameObject, int updatedGemCount)
     {
-        gameObject.SetActive(false);
-        marbles.Remove(gameObject);
-        activeMarbleCount--;
+        if (!leaderboardIconsByMarbles.TryGetValue(gameObject, out var leaderboardEntryObj))
+        {
+            Debug.Log("Could not get leaderboard entry corresponding given marble gameobject.");
+        }
+
+        var leaderboardIcon = leaderboardEntryObj.GetComponent<LeaderboardIcon>();
+        leaderboardIcon.GemCount = updatedGemCount;
+
+        UpdateLeaderboard();
+    }
+
+    private void UpdateLeaderboard()
+    {
+        leaderboardIcons.Sort((g1, g2) => g2.GetComponent<LeaderboardIcon>().GemCount - g1.GetComponent<LeaderboardIcon>().GemCount);
+
+        var first = leaderboardIcons[0].GetComponent<LeaderboardIcon>();
+        var second = leaderboardIcons[1].GetComponent<LeaderboardIcon>();
+        var third = leaderboardIcons[2].GetComponent<LeaderboardIcon>();
+        var fourth = leaderboardIcons[3].GetComponent<LeaderboardIcon>();
+        var fifth = leaderboardIcons[4].GetComponent<LeaderboardIcon>();
+
+        leaderboardTexts[0].text = $"1st: {first.GemCount}";
+        leaderboardTexts[1].text = $"2nd: {second.GemCount}";
+        leaderboardTexts[2].text = $"3rd: {third.GemCount}";
+        leaderboardTexts[3].text = $"4th: {fourth.GemCount}";
+        leaderboardTexts[4].text = $"5th: {fifth.GemCount}";
+
+        foreach (var iconObj in leaderboardIcons)
+        {
+            iconObj.SetActive(false);
+        }
+
+        first.SetLeaderboardPosition(1);
+        second.SetLeaderboardPosition(2);
+        third.SetLeaderboardPosition(3);
+        fourth.SetLeaderboardPosition(4);
+        fifth.SetLeaderboardPosition(5);
     }
 
     private void EndGame()
@@ -257,8 +319,7 @@ public class GameManager : MonoBehaviour
         endGamePanel.SetActive(true);
         CancelInvoke();
 
-        //TODO: Figure out display winner thing based on leaderboard entry
-        marbles[0].GetComponent<Marble>().DisplayWinner();
+        leaderboardIcons[0].GetComponent<LeaderboardIcon>().DisplayWinner();
     }
 
     private struct ColorTexturePair

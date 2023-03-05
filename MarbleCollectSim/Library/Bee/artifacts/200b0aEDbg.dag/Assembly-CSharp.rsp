@@ -352,6 +352,7 @@
 -r:"Library/Bee/artifacts/200b0aEDbg.dag/UnityEditor.UI.ref.dll"
 -r:"Library/Bee/artifacts/200b0aEDbg.dag/UnityEngine.UI.ref.dll"
 "Assets/Scripts/GameManager.cs"
+"Assets/Scripts/LeaderboardIcon.cs"
 "Assets/Scripts/Marble.cs"
 "Assets/Scripts/Pickup.cs"
 "Assets/Scripts/StartMenuManager.cs"
