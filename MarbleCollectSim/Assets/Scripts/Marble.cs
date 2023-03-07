@@ -13,7 +13,7 @@ public class Marble : MonoBehaviour
 
     private const string SizeMultiplierTag = "SizeMultiplier";
 
-    private const float PowerUpDuration = 8f;
+    private const float PowerUpDuration = 6f;
 
     private const float SpeedBoostAmount = 45f;
 
