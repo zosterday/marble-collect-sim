@@ -25,8 +25,10 @@ public class StartMenuManager : MonoBehaviour
             marbleSpawnCount = DefaultMarbleSpawnCount;
         }
 
-        marbleSpawnCount = Mathf.Min(marbleSpawnCount, DefaultMarbleSpawnCount);
-        marbleSpawnCount = Mathf.Max(marbleSpawnCount, 1);
+        if (marbleSpawnCount < 1)
+        {
+            marbleSpawnCount = DefaultMarbleSpawnCount;
+        }
 
         StateMachine.MarbleSpawnCount = marbleSpawnCount;
 

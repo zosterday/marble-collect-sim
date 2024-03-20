@@ -65,3 +65,9 @@ crashlytics-build.properties
 *.backup
 *.asset
 
+MarbleCollectSim/Library/*
+MarbleCollectSim/Logs/*
+MarbleCollectSim/Temp/*
+MarbleCollectSim/Library/*
+.DS_Store
+/MarbleCollectSim/Library

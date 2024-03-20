@@ -12,11 +12,13 @@ public class GameManager : MonoBehaviour
 
     private const float MarbleRadius = 0.5f;
 
-    private const int PowerUpSpawnCount = 3;
+    private const int PowerUpMinSpawnCount = 3;
 
-    private const int GemMinSpawnCount = 4;
+    private const int PowerUpMaxSpawnCount = 5;
 
-    private const int GemMaxSpawnCount = 8;
+    private const int GemMinSpawnCount = 5;
+
+    private const int GemMaxSpawnCount = 12;
 
     public static GameManager Instance
     {
@@ -24,7 +26,7 @@ public class GameManager : MonoBehaviour
         {
             if (instance is null)
             {
-                throw new System.InvalidOperationException("Instance of GameManager is null");
+                throw new System.NullReferenceException("Instance of GameManager is null");
             }
 
             return instance;
@@ -35,7 +37,7 @@ public class GameManager : MonoBehaviour
 
     private static GameManager instance;
 
-    private float countdownTimer = 60f;
+    private float countdownTimer = 30f;
 
     [SerializeField]
     private GameObject marblePrefab;
@@ -182,7 +184,7 @@ public class GameManager : MonoBehaviour
 
     private void SpawnGems()
     {
-        var gemSpawnCount = Random.Range(GemMinSpawnCount, GemMinSpawnCount);
+        var gemSpawnCount = Random.Range(GemMinSpawnCount, GemMaxSpawnCount);
 
         for (var i = 0; i < gemSpawnCount; i++)
         {
@@ -212,7 +214,9 @@ public class GameManager : MonoBehaviour
 
     private void SpawnPowerUps()
     {
-        for (var i = 0; i < PowerUpSpawnCount; i++)
+        var powerUpSpawnCount = Random.Range(PowerUpMinSpawnCount, PowerUpMaxSpawnCount);
+
+        for (var i = 0; i < powerUpSpawnCount; i++)
         {
             var powerUpSpawned = false;
 

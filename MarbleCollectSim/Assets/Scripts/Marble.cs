@@ -137,6 +137,7 @@ public class Marble : MonoBehaviour
 
         rb.velocity = Vector3.zero;
         rb.rotation = Quaternion.identity;
+        rb.freezeRotation = true;
     }
 
     public void DisplayWinner()
